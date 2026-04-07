@@ -11,33 +11,38 @@ from fastapi.templating import Jinja2Templates
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
-# --- Model Download Logic ---
-# Google Drive IDs from your links
-
-gdown.download("https://drive.google.com/file/d/1ZdUs5kj-TfiH58HnnnSAFm7sM1BPnnoo/view?usp=drive_link", "vgg_model.h5", quiet=False)
-gdown.download("https://drive.google.com/file/d/1CrjfNCG-J349QBKrbQ59nnm8hhL3c0nq/view?usp=drive_link", "resnet_model.h5", quiet=False)
-
-
+# --- 1. SET PROPER IDS (Just the string, not the URL) ---
 VGG_ID = "https://drive.google.com/file/d/1ZdUs5kj-TfiH58HnnnSAFm7sM1BPnnoo/view?usp=drive_link"
-RESNET_ID ="https://drive.google.com/file/d/1CrjfNCG-J349QBKrbQ59nnm8hhL3c0nq/view?usp=drive_link"
+RESNET_ID = "https://drive.google.com/file/d/1CrjfNCG-J349QBKrbQ59nnm8hhL3c0nq/view?usp=drive_link"
 
+# --- 2. UNIFIED DOWNLOAD FUNCTION ---
 def download_models():
-    if not os.path.exists("vgg_model.h5"):
-        print("Downloading VGG model...")
-        gdown.download(id=VGG_ID, output="vgg_model.h5", quiet=False)
+    models = {
+        "vgg_model.h5": VGG_ID,
+        "resnet_model.h5": RESNET_ID
+    }
     
-    if not os.path.exists("resnet_model.h5"):
-        print("Downloading ResNet model...")
-        gdown.download(id=RESNET_ID, output="resnet_model.h5", quiet=False)
+    for filename, file_id in models.items():
+        # Delete the file if it exists but is too small (broken download)
+        if os.path.exists(filename) and os.path.getsize(filename) < 10000000:
+            print(f"Detected corrupted file for {filename}. Deleting...")
+            os.remove(filename)
 
-# Run download before loading
+        # Download only if the file doesn't exist
+        if not os.path.exists(filename):
+            print(f"Downloading {filename}...")
+            # Using id= ensures we get the raw file data
+            gdown.download(id=file_id, output=filename, quiet=False)
+
+# Run the download logic
 download_models()
 
-# Load models
+# --- 3. LOAD MODELS ---
+print("Loading models into memory...")
 vgg_model = tf.keras.models.load_model("vgg_model.h5")
 resnet_model = tf.keras.models.load_model("resnet_model.h5")
 
-# Classes
+# Classes and Preprocessing
 xray_classes = ["Normal", "Pneumonia"]
 ct_classes = ["Adenocarcinoma", "Large Cell Carcinoma", "Squamous Cell Carcinoma", "Covid", "Normal"]
 
