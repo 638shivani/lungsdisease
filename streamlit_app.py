@@ -1,5 +1,5 @@
 import streamlit as st
-import keras
+import tensorflow as tf
 import numpy as np
 from PIL import Image
 import gdown
@@ -16,11 +16,8 @@ gdown.download(vgg_url, "vgg_model.h5", quiet=False)
 gdown.download(resnet_url, "resnet_model.h5", quiet=False)
 
 # Load models
-from keras.models import load_model
-
-vgg_model = load_model("vgg_model.h5")
-resnet_model = load_model("resnet_model.h5")
-
+vgg_model = tf.keras.models.load_model("vgg_model.h5")
+resnet_model = tf.keras.models.load_model("resnet_model.h5")
 # Classes
 xray_classes = ["Normal", "Pneumonia"]
 
