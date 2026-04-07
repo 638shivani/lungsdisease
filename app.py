@@ -1,23 +1,21 @@
-from fastapi import FastAPI, UploadFile, File, Form, Request
-from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+import streamlit as st
 import tensorflow as tf
 import numpy as np
 from PIL import Image
-import io
 import gdown
 
-app = FastAPI()
+st.title("🫁 Lung Disease Detection")
 
-templates = Jinja2Templates(directory="templates")
+
+
+# Download models
+vgg_url = "https://drive.google.com/file/d/1ZdUs5kj-TfiH58HnnnSAFm7sM1BPnnoo/view?usp=drive_link"
+resnet_url = "https://drive.google.com/file/d/1CrjfNCG-J349QBKrbQ59nnm8hhL3c0nq/view?usp=drive_link"
+
+gdown.download(vgg_url, "vgg_model.h5", quiet=False)
+gdown.download(resnet_url, "resnet_model.h5", quiet=False)
 
 # Load models
-import gdown
-
-# Download from Google Drive
-gdown.download("https://drive.google.com/file/d/1ZdUs5kj-TfiH58HnnnSAFm7sM1BPnnoo/view?usp=drive_link", "vgg_model.h5", quiet=False)
-gdown.download("https://drive.google.com/file/d/1CrjfNCG-J349QBKrbQ59nnm8hhL3c0nq/view?usp=drive_link", "resnet_model.h5", quiet=False)
-
 vgg_model = tf.keras.models.load_model("vgg_model.h5")
 resnet_model = tf.keras.models.load_model("resnet_model.h5")
 
@@ -32,23 +30,20 @@ ct_classes = [
     "Normal"
 ]
 
-# Preprocess
+# Upload
+uploaded_file = st.file_uploader("Upload Image", type=["jpg", "png", "jpeg"])
+
+image_type = st.selectbox("Select Image Type", ["xray", "ct"])
+
 def preprocess(image):
-    image = image.resize((224, 224))
-    image = np.array(image) / 255.0
+    image = image.resize((224,224))
+    image = np.array(image)/255.0
     image = np.expand_dims(image, axis=0)
     return image
 
-# Home page
-@app.get("/", response_class=HTMLResponse)
-def home(request: Request):
-    return templates.TemplateResponse("index.html", {"request": request})
-
-# Prediction API
-@app.post("/predict")
-async def predict(file: UploadFile = File(...), image_type: str = Form(...)):
-    contents = await file.read()
-    image = Image.open(io.BytesIO(contents)).convert("RGB")
+if uploaded_file is not None:
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image")
 
     img = preprocess(image)
 
@@ -61,7 +56,5 @@ async def predict(file: UploadFile = File(...), image_type: str = Form(...)):
 
     confidence = float(np.max(pred))
 
-    return {
-        "prediction": result,
-        "confidence": round(confidence * 100, 2)
-    }
+    st.success(f"Prediction: {result}")
+    st.info(f"Confidence: {round(confidence*100,2)}%")
