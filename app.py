@@ -12,8 +12,8 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 # --- 1. SET PROPER IDS (Just the string, not the URL) ---
-VGG_ID = "https://drive.google.com/file/d/1ZdUs5kj-TfiH58HnnnSAFm7sM1BPnnoo/view?usp=drive_link"
-RESNET_ID = "https://drive.google.com/file/d/1CrjfNCG-J349QBKrbQ59nnm8hhL3c0nq/view?usp=drive_link"
+VGG_ID = "1ZdUs5kj-TfiH58HnnnSAFm7sM1BPnnoo/view?usp=drive_link"
+RESNET_ID = "1CrjfNCG-J349QBKrbQ59nnm8hhL3c0nq/view?usp=drive_link"
 
 # --- 2. UNIFIED DOWNLOAD FUNCTION ---
 def download_models():
