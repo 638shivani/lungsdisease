@@ -11,6 +11,12 @@ app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 # Load models
+import gdown
+
+# Download from Google Drive
+gdown.download("https://drive.google.com/file/d/1ZdUs5kj-TfiH58HnnnSAFm7sM1BPnnoo/view?usp=drive_link", "vgg_model.h5", quiet=False)
+gdown.download("https://drive.google.com/file/d/1CrjfNCG-J349QBKrbQ59nnm8hhL3c0nq/view?usp=drive_link", "resnet_model.h5", quiet=False)
+
 vgg_model = tf.keras.models.load_model("vgg_model.h5")
 resnet_model = tf.keras.models.load_model("resnet_model.h5")
 
